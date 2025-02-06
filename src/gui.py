@@ -1,4 +1,5 @@
 import tkinter as tk
+from ctypes import windll
 from tkinter import filedialog, messagebox
 import google_sheets_manager
 
@@ -14,6 +15,7 @@ def upload_file():
 
 
 # GUI Setup
+windll.shcore.SetProcessDpiAwareness(1)
 root = tk.Tk()
 root.title("Upload Excel to Google Sheets")
 
