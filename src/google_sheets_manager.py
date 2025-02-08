@@ -37,7 +37,6 @@ def upload_to_google_sheets(file_path):
             return False
 
         """Data upload"""
-        # sheet.clear()
         sheet.append_rows(df.values.tolist())
         # sheet.append_rows([df.columns.tolist()] + df.values.tolist())
 
