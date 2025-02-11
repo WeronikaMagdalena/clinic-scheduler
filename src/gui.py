@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from google_sheets_manager import GoogleSheetsManager
+from data_loader import DataLoader
 from table_widget import TableWidget
 from filter_widget import FilterWidget
 from upload_handler import UploadHandler
@@ -12,7 +13,7 @@ class App(QWidget):
         self.original_data = []  # Store unfiltered data
 
         self.init_ui()
-        self.load_data()
+        self.data_loader.load_data()
 
     def init_ui(self):
         self.setWindowTitle('Google Sheets Viewer')
@@ -35,18 +36,4 @@ class App(QWidget):
 
         self.setLayout(self.layout)
 
-    def load_data(self):
-        """Load Google Sheets data into the table widget."""
-        data = self.sheets_manager.get_data()
-
-        if not data:
-            return
-
-        headers = data[0]  # First row as headers
-        self.original_data = data[1:]  # Store full dataset for filtering
-
-        self.table.setColumnCount(len(headers))
-        self.table.setHorizontalHeaderLabels(headers)
-
-        self.filter_widget.populate_dropdown()  # Fill dropdown with available months
-        self.filter_widget.apply_filter()  # Initially show all data
+        self.data_loader = DataLoader(self)

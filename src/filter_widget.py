@@ -16,13 +16,21 @@ class FilterWidget(QWidget):
 
         self.setLayout(self.layout)
 
+    def parse_month_year(self, value):
+        """Convert 'mm/yyyy' string into (year, month) tuple for proper sorting."""
+        try:
+            month, year = map(int, value.split('/'))
+            return (year, month)
+        except ValueError:
+            return (0, 0)
+
     def populate_dropdown(self):
         """Populate dropdown with unique 'Betreuungsmonat' values."""
         month_index = self.parent.sheets_manager.get_headers().index("Betreuungsmonat")
-        months = sorted(set(row[month_index] for row in self.parent.original_data))
+        months = sorted(set(row[month_index] for row in self.parent.original_data), key=self.parse_month_year)
 
         self.filter_dropdown.clear()
-        self.filter_dropdown.addItem("All", None)  # Default option
+        self.filter_dropdown.addItem("All", None)
         self.filter_dropdown.addItems(months)
 
     def apply_filter(self):
