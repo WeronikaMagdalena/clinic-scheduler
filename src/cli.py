@@ -1,5 +1,6 @@
 import argparse
 import google_sheets_manager
+import pandas as pd
 
 
 def cli_main():
@@ -7,6 +8,7 @@ def cli_main():
 
     parser.add_argument("--clear-all", action="store_true", help="Clear all data including headers")
     parser.add_argument("--clear-keep-headers", action="store_true", help="Clear all rows but keep headers")
+    parser.add_argument("--print-data-types", action="store_true", help="Print all data headers and their types")
 
     args = parser.parse_args()
 
@@ -29,6 +31,15 @@ def cli_main():
                 print("❌ Failed to clear Google Sheets.")
         else:
             print("⏳ Operation canceled.")
+
+    elif args.print_data_types:
+        data = google_sheets_manager.fetch_google_sheets_data()
+        if data:
+            df = pd.DataFrame(data[1:], columns=data[0])
+            print("📊 Data Headers and Their Types:")
+            print(df.dtypes)
+        else:
+            print("❌ No data found in Google Sheets.")
 
     else:
         parser.print_help()
