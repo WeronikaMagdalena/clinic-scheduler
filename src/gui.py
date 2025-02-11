@@ -1,7 +1,8 @@
-import pandas as pd
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QMessageBox
+    QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog,
+    QMessageBox, QComboBox, QLabel
 )
+import pandas as pd
 from google_sheets_manager import GoogleSheetsManager
 
 
@@ -9,21 +10,30 @@ class GoogleSheetsApp(QWidget):
     def __init__(self, credentials_file, sheet_name):
         super().__init__()
         self.sheets_manager = GoogleSheetsManager(credentials_file, sheet_name)
+        self.original_data = []  # Store unfiltered data
         self.init_ui()
         self.load_data()
 
     def init_ui(self):
         self.setWindowTitle('Google Sheets Viewer')
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 800, 500)
 
         self.layout = QVBoxLayout()
+
+        # Filter Dropdown
+        self.filter_label = QLabel("Filter by Betreuungsmonat:")
+        self.layout.addWidget(self.filter_label)
+
+        self.filter_dropdown = QComboBox()
+        self.filter_dropdown.currentIndexChanged.connect(self.apply_filter)
+        self.layout.addWidget(self.filter_dropdown)
 
         # Table to Display Data
         self.tableWidget = QTableWidget()
         self.tableWidget.horizontalHeader().setVisible(True)
         self.layout.addWidget(self.tableWidget)
 
-        # Button to Upload File
+        # Upload Button
         self.uploadButton = QPushButton("Upload XLSX File")
         self.uploadButton.clicked.connect(self.upload_data)
         self.layout.addWidget(self.uploadButton)
@@ -38,14 +48,40 @@ class GoogleSheetsApp(QWidget):
             return
 
         headers = data[0]  # First row as headers
-        data_rows = data[1:]  # Rest as actual data
+        self.original_data = data[1:]  # Store full dataset for filtering
 
         self.tableWidget.setColumnCount(len(headers))
-        self.tableWidget.setHorizontalHeaderLabels(headers)  # Set headers
+        self.tableWidget.setHorizontalHeaderLabels(headers)
 
-        self.tableWidget.setRowCount(len(data_rows))
+        self.populate_dropdown()  # Fill dropdown with available months
+        self.apply_filter()  # Initially show all data
 
-        for row_idx, row in enumerate(data_rows):
+    def populate_dropdown(self):
+        """Populate dropdown with unique 'Betreuungsmonat' values."""
+        month_index = self.sheets_manager.get_headers().index("Betreuungsmonat")
+        months = sorted(set(row[month_index] for row in self.original_data))
+
+        self.filter_dropdown.clear()
+        self.filter_dropdown.addItem("All", None)  # Default option
+        self.filter_dropdown.addItems(months)
+
+    def apply_filter(self):
+        """Filter table based on selected 'Betreuungsmonat'."""
+        selected_month = self.filter_dropdown.currentText()
+
+        if selected_month == "All" or not selected_month:
+            filtered_data = self.original_data
+        else:
+            month_index = self.sheets_manager.get_headers().index("Betreuungsmonat")
+            filtered_data = [row for row in self.original_data if row[month_index] == selected_month]
+
+        self.update_table(filtered_data)
+
+    def update_table(self, data):
+        """Update table display with filtered data."""
+        self.tableWidget.setRowCount(len(data))
+
+        for row_idx, row in enumerate(data):
             self.tableWidget.setVerticalHeaderItem(row_idx, QTableWidgetItem(str(row_idx + 1)))  # Index starts at 1
             for col_idx, cell in enumerate(row):
                 self.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(cell))
