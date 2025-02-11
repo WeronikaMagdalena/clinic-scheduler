@@ -1,41 +1,36 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog,
-    QMessageBox, QComboBox, QLabel
-)
-import pandas as pd
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from google_sheets_manager import GoogleSheetsManager
+from table_widget import TableWidget
+from filter_widget import FilterWidget
+from upload_handler import UploadHandler
 
 
-class GoogleSheetsApp(QWidget):
+class App(QWidget):
     def __init__(self, credentials_file, sheet_name):
         super().__init__()
         self.sheets_manager = GoogleSheetsManager(credentials_file, sheet_name)
         self.original_data = []  # Store unfiltered data
+
         self.init_ui()
         self.load_data()
 
     def init_ui(self):
         self.setWindowTitle('Google Sheets Viewer')
         self.setGeometry(100, 100, 800, 500)
-
         self.layout = QVBoxLayout()
 
-        # Filter Dropdown
-        self.filter_label = QLabel("Filter by Betreuungsmonat:")
-        self.layout.addWidget(self.filter_label)
+        # Filter Widget
+        self.filter_widget = FilterWidget(self)
+        self.layout.addWidget(self.filter_widget)
 
-        self.filter_dropdown = QComboBox()
-        self.filter_dropdown.currentIndexChanged.connect(self.apply_filter)
-        self.layout.addWidget(self.filter_dropdown)
-
-        # Table to Display Data
-        self.tableWidget = QTableWidget()
-        self.tableWidget.horizontalHeader().setVisible(True)
-        self.layout.addWidget(self.tableWidget)
+        # Table Widget
+        self.table = TableWidget(self)
+        self.layout.addWidget(self.table)
 
         # Upload Button
+        self.upload_handler = UploadHandler(self)
         self.uploadButton = QPushButton("Upload XLSX File")
-        self.uploadButton.clicked.connect(self.upload_data)
+        self.uploadButton.clicked.connect(self.upload_handler.upload_data)
         self.layout.addWidget(self.uploadButton)
 
         self.setLayout(self.layout)
@@ -50,70 +45,8 @@ class GoogleSheetsApp(QWidget):
         headers = data[0]  # First row as headers
         self.original_data = data[1:]  # Store full dataset for filtering
 
-        self.tableWidget.setColumnCount(len(headers))
-        self.tableWidget.setHorizontalHeaderLabels(headers)
+        self.table.setColumnCount(len(headers))
+        self.table.setHorizontalHeaderLabels(headers)
 
-        self.populate_dropdown()  # Fill dropdown with available months
-        self.apply_filter()  # Initially show all data
-
-    def populate_dropdown(self):
-        """Populate dropdown with unique 'Betreuungsmonat' values."""
-        month_index = self.sheets_manager.get_headers().index("Betreuungsmonat")
-        months = sorted(set(row[month_index] for row in self.original_data))
-
-        self.filter_dropdown.clear()
-        self.filter_dropdown.addItem("All", None)  # Default option
-        self.filter_dropdown.addItems(months)
-
-    def apply_filter(self):
-        """Filter table based on selected 'Betreuungsmonat'."""
-        selected_month = self.filter_dropdown.currentText()
-
-        if selected_month == "All" or not selected_month:
-            filtered_data = self.original_data
-        else:
-            month_index = self.sheets_manager.get_headers().index("Betreuungsmonat")
-            filtered_data = [row for row in self.original_data if row[month_index] == selected_month]
-
-        self.update_table(filtered_data)
-
-    def update_table(self, data):
-        """Update table display with filtered data."""
-        self.tableWidget.setRowCount(len(data))
-
-        for row_idx, row in enumerate(data):
-            self.tableWidget.setVerticalHeaderItem(row_idx, QTableWidgetItem(str(row_idx + 1)))  # Index starts at 1
-            for col_idx, cell in enumerate(row):
-                self.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(cell))
-
-    def upload_data(self):
-        """Handle file selection, validation, and data upload."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open XLSX File", "", "Excel Files (*.xlsx)")
-        if not file_path:
-            return
-
-        try:
-            df = pd.read_excel(file_path)
-
-            # Validate headers
-            sheet_headers = self.sheets_manager.get_headers()
-            df.columns = df.iloc[0]
-            if list(df.columns) != sheet_headers:
-                QMessageBox.warning(self, "Error", "Uploaded file headers do not match the sheet.")
-                return
-
-            # Remove headers and convert to list
-            df = df[1:].reset_index(drop=True)
-            df = df.fillna("")
-            data_to_upload = df.values.tolist()
-
-            # Upload to Google Sheets
-            self.sheets_manager.append_data(data_to_upload)
-
-            # Reload Data
-            self.load_data()
-
-            QMessageBox.information(self, "Success", "Data uploaded successfully!")
-
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to upload data: {str(e)}")
+        self.filter_widget.populate_dropdown()  # Fill dropdown with available months
+        self.filter_widget.apply_filter()  # Initially show all data
