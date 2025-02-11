@@ -33,13 +33,22 @@ class GoogleSheetsApp(QWidget):
     def load_data(self):
         """Load Google Sheets data into the table widget."""
         data = self.sheets_manager.get_data()
-        if data:
-            self.tableWidget.setRowCount(len(data))
-            self.tableWidget.setColumnCount(len(data[0]))
 
-            for row_idx, row in enumerate(data):
-                for col_idx, cell in enumerate(row):
-                    self.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(cell))
+        if not data:
+            return
+
+        headers = data[0]  # First row as headers
+        data_rows = data[1:]  # Rest as actual data
+
+        self.tableWidget.setColumnCount(len(headers))
+        self.tableWidget.setHorizontalHeaderLabels(headers)  # Set headers
+
+        self.tableWidget.setRowCount(len(data_rows))
+
+        for row_idx, row in enumerate(data_rows):
+            self.tableWidget.setVerticalHeaderItem(row_idx, QTableWidgetItem(str(row_idx + 1)))  # Index starts at 1
+            for col_idx, cell in enumerate(row):
+                self.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(cell))
 
     def upload_data(self):
         """Handle file selection, validation, and data upload."""
