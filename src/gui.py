@@ -1,8 +1,11 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-from ctypes import windll
+from tkinter import ttk, filedialog, messagebox, Toplevel
+from tkhtmlview import HTMLLabel
+import webbrowser
 import google_sheets_manager
 import month_filter
+import map_generator
+from ctypes import windll
 
 
 class DataRouteApp:
@@ -55,6 +58,10 @@ class DataRouteApp:
         tree_y_scroll.pack(side="right", fill="y")
         self.tree.pack(fill="both", expand=True)
 
+        # Map Button
+        map_btn = ttk.Button(main_frame, text="Show Map", command=self.show_map)
+        map_btn.pack(pady=5)
+
         self.update_table()
 
     def upload_file(self):
@@ -75,6 +82,31 @@ class DataRouteApp:
     def apply_filter(self):
         filter_value = self.filter_entry.get().strip()
         self.update_table(filter_value)
+
+    def show_map(self):
+        data = google_sheets_manager.fetch_google_sheets_data()
+        if not data:
+            messagebox.showerror("Error", "No data available for mapping!")
+            return
+
+        map_file = map_generator.generate_map(data)
+        if not map_file:
+            messagebox.showerror("Error", "No valid addresses found!")
+            return
+
+        try:
+            with open(map_file, "r", encoding="utf-8") as f:
+                map_html = f.read()
+
+            map_window = Toplevel(self.root)
+            map_window.title("Location Map")
+
+            html_label = HTMLLabel(map_window, html=map_html)
+            html_label.pack(fill="both", expand=True)
+
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Could not load the map. Opening in browser instead.")
+            webbrowser.open(map_file)
 
     def run(self):
         self.root.mainloop()
