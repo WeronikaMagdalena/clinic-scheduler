@@ -17,6 +17,7 @@ class UploadHandler:
 
             # Validate headers
             sheet_headers = self.parent.sheets_manager.get_headers()
+            sheet_headers = [header for header in sheet_headers if header != "Termin"]
             df.columns = df.iloc[0]
             if list(df.columns) != sheet_headers:
                 QMessageBox.warning(self.parent, "Error", "Uploaded file headers do not match the sheet.")
@@ -31,7 +32,7 @@ class UploadHandler:
             self.parent.sheets_manager.append_data(data_to_upload)
 
             # Reload Data
-            self.parent.load_data()
+            self.parent.data_loader.load_data()
 
             QMessageBox.information(self.parent, "Success", "Data uploaded successfully!")
 

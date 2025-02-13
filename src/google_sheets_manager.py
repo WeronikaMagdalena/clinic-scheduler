@@ -1,7 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-
 class GoogleSheetsManager:
     def __init__(self, credentials_file, sheet_name):
         self.credentials_file = credentials_file
@@ -26,3 +25,7 @@ class GoogleSheetsManager:
     def append_data(self, new_data):
         """Append new data (excluding headers) to the Google Sheet."""
         self.sheet.append_rows(new_data)
+
+    def update_cell(self, row, col, value):
+        """Update a specific cell in the Google Sheet."""
+        self.sheet.update_cell(row, col, value)

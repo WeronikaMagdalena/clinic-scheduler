@@ -16,7 +16,7 @@ class App(QWidget):
         self.data_loader.load_data()
 
     def init_ui(self):
-        self.setWindowTitle('Google Sheets Viewer')
+        self.setWindowTitle('Data Link')
         self.setGeometry(100, 100, 800, 500)
         self.layout = QVBoxLayout()
 

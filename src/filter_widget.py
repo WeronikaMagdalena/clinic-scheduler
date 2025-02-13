@@ -43,4 +43,4 @@ class FilterWidget(QWidget):
             month_index = self.parent.sheets_manager.get_headers().index("Betreuungsmonat")
             filtered_data = [row for row in self.parent.original_data if row[month_index] == selected_month]
 
-        self.parent.table.update_table(filtered_data)
+        self.parent.table.update_table(filtered_data, self.parent.sheets_manager.get_headers())
