@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QDateEdit
-from PyQt5.QtCore import Qt, QDateTime
+from PyQt5.QtCore import Qt, QDate, QDateTime
 
 
 class TableWidget(QTableWidget):
@@ -20,12 +20,7 @@ class TableWidget(QTableWidget):
             self.setVerticalHeaderItem(row_idx, QTableWidgetItem(str(row_idx + 1)))  # Index starts at 1
             for col_idx, cell in enumerate(row):
                 if col_idx == self.termin_column:
-                    # Create a QDateEdit for the 'Termin' column
-                    date_edit = QDateEdit(calendarPopup=True)
-                    if cell:  # If there is an existing date, use it
-                        date_edit.setDateTime(QDateTime.fromString(cell, "yyyy-MM-dd"))
-                    else:
-                        date_edit.setDateTime(QDateTime.currentDateTime())  # Default to current date/time
+                    date_edit = CustomDateEdit(cell)
 
                     # Connect signal to update Google Sheets
                     date_edit.dateChanged.connect(
@@ -42,3 +37,25 @@ class TableWidget(QTableWidget):
         formatted_date = date.toString("yyyy-MM-dd")  # Format date for Google Sheets
         self.parent.sheets_manager.update_cell(row + 2, col + 1,
                                                formatted_date)  # +2 because Google Sheets starts at 1 and row 1 is headers
+
+
+class CustomDateEdit(QDateEdit):
+    def __init__(self, cell_value):
+        super().__init__(calendarPopup=True)
+        self.setDisplayFormat("yyyy-MM-dd")
+        self.setMinimumDate(QDate(1900, 1, 1))  # Set a reasonable minimum date
+
+        if cell_value:
+            self.setDate(QDateTime.fromString(cell_value, "yyyy-MM-dd").date())
+            self.setStyleSheet("")  # Normal text color
+        else:
+            self.setSpecialValueText("Not Set")
+            self.setDate(self.minimumDate())  # Default to minimum date
+            self.setStyleSheet("color: gray;")  # Indicate unset state
+
+    def mousePressEvent(self, event):
+        """If no date is set, change it to today when clicked."""
+        if self.date() == self.minimumDate():
+            self.setDate(QDate.currentDate())  # Set to today's date
+            self.setStyleSheet("")  # Reset text color to default
+        super().mousePressEvent(event)  # Continue normal event handling
