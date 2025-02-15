@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QDate, QDateTime
+from PyQt5.QtCore import QDate, QDateTime, Qt
 from PyQt5.QtWidgets import QDateEdit
 
 
@@ -18,6 +18,10 @@ class CustomDateEdit(QDateEdit):
             self.setStyleSheet("color: gray;")  # Indicate unset state
             self.setReadOnly(True)  # Make it non-editable when "Not Set"
 
+        # Disable text editing by default
+        self.setFocusPolicy(Qt.StrongFocus)  # Only focus via tab or click
+        self.lineEdit().setReadOnly(True)  # Prevent manual typing
+
     def mousePressEvent(self, event):
         """If no date is set, change it to today when clicked."""
         if self.date() == self.minimumDate():
@@ -31,3 +35,7 @@ class CustomDateEdit(QDateEdit):
         if self.date() == self.minimumDate():
             return  # Ignore key presses when "Not Set"
         super().keyPressEvent(event)
+
+    def wheelEvent(self, event):
+        """Disable scroll wheel changes."""
+        event.ignore()
