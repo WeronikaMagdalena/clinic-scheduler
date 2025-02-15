@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QComboBox, QLabel, QVBoxLayout, QWidget
 
 
-class FilterWidget(QWidget):
+class BetreuungsmonatFilterWidget(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent

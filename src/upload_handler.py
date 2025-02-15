@@ -25,7 +25,7 @@ class UploadHandler:
 
             # Remove headers and convert to list
             df = df[1:].reset_index(drop=True)
-            df = df.fillna("")
+            df = df.fillna("").infer_objects(copy=False)
             data_to_upload = df.values.tolist()
 
             # Upload to Google Sheets
