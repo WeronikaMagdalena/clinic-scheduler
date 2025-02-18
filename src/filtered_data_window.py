@@ -37,7 +37,9 @@ class FilteredDataWindow(QDialog):
         self.setLayout(layout)
 
     def send_email_reminder(self):
+        # TODO: Proper address
         sender_email = "noname01015501@gmail.com"  # Replace with your email
+        # TODO: Secure method
         sender_password = "roof wewn eyoc zddo"  # Replace with your email password or app password
 
         subject = "Reminder: Upcoming Termin Date"
@@ -50,7 +52,6 @@ class FilteredDataWindow(QDialog):
         server = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
         server.ehlo()
 
-        subject = "Subject"
         msg = f"""\
         From: {sender_email}
         To: {", ".join(recipients)}
