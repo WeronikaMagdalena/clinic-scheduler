@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from google_sheets_manager import GoogleSheetsManager
 from data_loader import DataLoader
-# from termin_filter_widget import TerminFilterWidget
+from termin_filter_widget import TerminFilterWidget
 from table_widget import TableWidget
 from betreuungsmonat_filter_widget import BetreuungsmonatFilterWidget
 from upload_handler import UploadHandler
@@ -26,8 +26,8 @@ class App(QWidget):
         self.layout.addWidget(self.filter_widget)
 
         # Termin Filter Widget
-        # self.termin_filter_widget = TerminFilterWidget(self)
-        # self.layout.addWidget(self.termin_filter_widget)
+        self.termin_filter_widget = TerminFilterWidget(self)
+        self.layout.addWidget(self.termin_filter_widget)
 
         # Table Widget
         self.table = TableWidget(self)

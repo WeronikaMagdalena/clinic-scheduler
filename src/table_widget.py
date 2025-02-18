@@ -72,8 +72,6 @@ class TableWidget(QTableWidget):
         # Get the original row index using the filtered data mapping
         try:
             original_row = self.parent.filter_widget.filtered_data_mapping[row][1]  # Get the original row index
-            print(original_row)
-            print(self.parent.filter_widget.filtered_data_mapping)
         except IndexError as e:
             original_row = row
 
