@@ -32,14 +32,13 @@ class TerminFilterWidget(QWidget):
         filtered_data = self.filter_by_termin(selected_date)
 
         # Create a new window or dialog to show filtered data
-        self.filtered_window = FilteredDataWindow(filtered_data)
+        self.filtered_window = FilteredDataWindow(filtered_data, self)
         self.filtered_window.exec_()
 
     def filter_by_termin(self, selected_date):
         """Filter rows where the 'Termin' column matches the selected date."""
         data = self.parent.original_data
         termin_column_index = self.parent.sheets_manager.get_headers().index("Termin")
-        termin_column = [row[termin_column_index] for row in data]
 
         # Filter rows based on the selected date
         filtered_data = [row for row in data if row[termin_column_index] == selected_date]

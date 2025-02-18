@@ -77,6 +77,9 @@ class TableWidget(QTableWidget):
 
         formatted_date = date.toString("yyyy-MM-dd") if date != QDate(1900, 1, 1) else ""
 
+        # Update original data in the parent
+        self.parent.original_data[original_row][col] = formatted_date  # Update original data
+
         # Update the Google Sheet with the correct row and column
         self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_date)  # +2 for Google Sheets indexing
 
@@ -85,4 +88,13 @@ class TableWidget(QTableWidget):
         date_edit.setDate(QDate(1900, 1, 1))  # Reset to minimum date
         date_edit.setSpecialValueText("Not Set")
         date_edit.setStyleSheet("color: gray;")
+        # Update original data in the parent
+        try:
+            original_row = self.parent.filter_widget.filtered_data_mapping[row][1] if hasattr(self.parent.filter_widget,
+                                                                                          'filtered_data_mapping') else row
+        except IndexError as e:
+            original_row = row
+
+        self.parent.original_data[original_row][self.termin_column] = ""  # Clear the date in original data
+
         self.save_date_to_google_sheets(row, self.termin_column, QDate(1900, 1, 1))

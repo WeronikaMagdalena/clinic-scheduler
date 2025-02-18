@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem
 
 
 class FilteredDataWindow(QDialog):
-    def __init__(self, filtered_data):
+    def __init__(self, filtered_data, parent):
         super().__init__()
+        self.parent = parent
         self.filtered_data = filtered_data
         self.init_ui()
 
@@ -45,9 +46,9 @@ class FilteredDataWindow(QDialog):
         subject = "Reminder: Upcoming Termin Date"
         body = "This is a reminder for your scheduled Termin."
 
-        # Dummy email substitution for testing
-        recipient_email = "weronika.wooojcik@gmail.com"
-        recipients = [recipient_email]
+        email_column_index = self.parent.parent.sheets_manager.get_headers().index("AS E-Mail")
+        recipients = [row[email_column_index] for row in self.filtered_data if row[email_column_index]]
+        print(recipients)
 
         server = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
         server.ehlo()
