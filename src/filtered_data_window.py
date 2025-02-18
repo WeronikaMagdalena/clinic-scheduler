@@ -1,7 +1,7 @@
 import smtplib
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel, QPushButton
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel, QPushButton, QMessageBox
 
 
 class FilteredDataWindow(QDialog):
@@ -65,5 +65,7 @@ class FilteredDataWindow(QDialog):
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipients, msg)
                 print("Emails sent successfully!")
+                QMessageBox.information(self, "Success", "Emails sent successfully!")
         except Exception as e:
             print(f"Failed to send email: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to send email: {e}")
