@@ -70,7 +70,13 @@ class TableWidget(QTableWidget):
     def save_date_to_google_sheets(self, row, col, date):
         """Update the Google Sheet when a date is changed."""
         # Get the original row index using the filtered data mapping
-        original_row = self.parent.filter_widget.filtered_data_mapping[row][1]  # Get the original row index
+        try:
+            original_row = self.parent.filter_widget.filtered_data_mapping[row][1]  # Get the original row index
+            print(original_row)
+            print(self.parent.filter_widget.filtered_data_mapping)
+        except IndexError as e:
+            original_row = row
+
         formatted_date = date.toString("yyyy-MM-dd") if date != QDate(1900, 1, 1) else ""
 
         # Update the Google Sheet with the correct row and column
