@@ -39,3 +39,4 @@ class CustomDateEdit(QDateEdit):
     def wheelEvent(self, event):
         """Disable scroll wheel changes."""
         event.ignore()
+

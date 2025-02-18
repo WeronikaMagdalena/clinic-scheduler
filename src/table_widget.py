@@ -29,36 +29,34 @@ class TableWidget(QTableWidget):
                     date_edit = CustomDateEdit(cell)
                     layout.addWidget(date_edit)
 
-                    if cell:  # Only add 'x' button if there's a date
-                        clear_button = QPushButton("×")
-                        clear_button.setFixedSize(22, 22)
-                        clear_button.setStyleSheet(
-                            "border: none; color: red; font-weight: bold; font-size: 14px;"
-                        )
-                        clear_button.setFocusPolicy(Qt.StrongFocus)  # Allow the button to gain focus
+                    clear_button = QPushButton("×")
+                    clear_button.setFixedSize(22, 22)
+                    clear_button.setStyleSheet(
+                        "border: none; color: red; font-weight: bold; font-size: 14px;"
+                    )
+                    clear_button.setFocusPolicy(Qt.StrongFocus)  # Allow the button to gain focus
 
-                        # Add a visual effect when the button is focused
-                        clear_button.setStyleSheet(
-                            "border: none; color: red; font-weight: bold; font-size: 14px;"
-                            "border-radius: 11px; padding: 3px; background-color: transparent;"
-                        )
+                    # Add a visual effect when the button is focused
+                    clear_button.setStyleSheet(
+                        "border: none; color: red; font-weight: bold; font-size: 14px;"
+                        "border-radius: 11px; padding: 3px; background-color: transparent;"
+                    )
 
-                        clear_button.setStyleSheet("""
-                            QPushButton:focus {
-                                background-color: lightcoral; /* Change color when focused */
-                                color: white;
-                            }
-                        """)
+                    clear_button.setStyleSheet("""
+                        QPushButton:focus {
+                            background-color: lightcoral; /* Change color when focused */
+                            color: white;
+                        }
+                    """)
 
-                        clear_button.clicked.connect(
-                            lambda _, r=row_idx, d=date_edit: self.clear_date(r, d)
-                        )
+                    clear_button.clicked.connect(
+                        lambda _, r=row_idx, d=date_edit: self.clear_date(r, d)
+                    )
 
-                        layout.addWidget(clear_button)
+                    layout.addWidget(clear_button)
 
                     widget.setLayout(layout)
                     self.setCellWidget(row_idx, col_idx, widget)
-
 
                     # Connect signal to update Google Sheets
                     date_edit.dateChanged.connect(
@@ -71,13 +69,16 @@ class TableWidget(QTableWidget):
 
     def save_date_to_google_sheets(self, row, col, date):
         """Update the Google Sheet when a date is changed."""
+        # Get the original row index using the filtered data mapping
+        original_row = self.parent.filter_widget.filtered_data_mapping[row][1]  # Get the original row index
         formatted_date = date.toString("yyyy-MM-dd") if date != QDate(1900, 1, 1) else ""
-        self.parent.sheets_manager.update_cell(row + 2, col + 1, formatted_date)  # +2 for Google Sheets indexing
+
+        # Update the Google Sheet with the correct row and column
+        self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_date)  # +2 for Google Sheets indexing
 
     def clear_date(self, row, date_edit):
         """Reset date to 'Not Set' and update Google Sheets."""
         date_edit.setDate(QDate(1900, 1, 1))  # Reset to minimum date
         date_edit.setSpecialValueText("Not Set")
         date_edit.setStyleSheet("color: gray;")
-        date_edit.setReadOnly(True)
         self.save_date_to_google_sheets(row, self.termin_column, QDate(1900, 1, 1))

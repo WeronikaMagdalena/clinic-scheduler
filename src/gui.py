@@ -21,12 +21,13 @@ class App(QWidget):
         self.setGeometry(100, 100, 800, 500)
         self.layout = QVBoxLayout()
 
-        # Filter Widget
+        # Betreuungsmonat Filter Widget
         self.filter_widget = BetreuungsmonatFilterWidget(self)
         self.layout.addWidget(self.filter_widget)
 
-        # self.filter_widget = TerminFilterWidget(self)
-        # self.layout.addWidget(self.filter_widget)
+        # Termin Filter Widget
+        # self.termin_filter_widget = TerminFilterWidget(self)
+        # self.layout.addWidget(self.termin_filter_widget)
 
         # Table Widget
         self.table = TableWidget(self)

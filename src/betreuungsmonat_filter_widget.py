@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QComboBox, QLabel, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox
 
 
 class BetreuungsmonatFilterWidget(QWidget):
@@ -15,6 +15,9 @@ class BetreuungsmonatFilterWidget(QWidget):
         self.layout.addWidget(self.filter_dropdown)
 
         self.setLayout(self.layout)
+
+        # Store a mapping of filtered data indices to original data indices
+        self.filtered_data_mapping = []
 
     def parse_month_year(self, value):
         """Convert 'mm/yyyy' string into (year, month) tuple for proper sorting."""
@@ -42,5 +45,10 @@ class BetreuungsmonatFilterWidget(QWidget):
         else:
             month_index = self.parent.sheets_manager.get_headers().index("Betreuungsmonat")
             filtered_data = [row for row in self.parent.original_data if row[month_index] == selected_month]
+
+         # Store mapping of filtered rows to original rows
+            self.filtered_data_mapping = [
+                (i, self.parent.original_data.index(row)) for i, row in enumerate(filtered_data)
+            ]
 
         self.parent.table.update_table(filtered_data, self.parent.sheets_manager.get_headers())
