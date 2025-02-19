@@ -1,8 +1,7 @@
-from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QDate, QDateTime
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDateEdit, QPushButton
 
 from filtered_data_window import FilteredDataWindow
-
 
 class TerminFilterWidget(QWidget):
     def __init__(self, parent):
@@ -28,7 +27,7 @@ class TerminFilterWidget(QWidget):
         self.setLayout(layout)
 
     def filter_data(self):
-        selected_date = self.date_picker.date().toString("yyyy-MM-dd")
+        selected_date = self.date_picker.date()
         filtered_data = self.filter_by_termin(selected_date)
 
         # Create a new window or dialog to show filtered data
@@ -41,5 +40,11 @@ class TerminFilterWidget(QWidget):
         termin_column_index = self.parent.sheets_manager.get_headers().index("Termin")
 
         # Filter rows based on the selected date
-        filtered_data = [row for row in data if row[termin_column_index] == selected_date]
+        filtered_data = []
+        for row in data:
+            termin_datetime_str = row[termin_column_index]
+            termin_date = QDateTime.fromString(termin_datetime_str, "yyyy-MM-dd HH:mm").date()
+            if termin_date == selected_date:
+                filtered_data.append(row)
+
         return filtered_data

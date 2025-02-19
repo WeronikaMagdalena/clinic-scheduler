@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt, QDate, QDateTime
 
 from calendar_widget import CustomDateEdit
+from google_calendar_manager import GoogleCalendarManager
 
 
 class TableWidget(QTableWidget):
@@ -10,6 +11,27 @@ class TableWidget(QTableWidget):
         self.parent = parent
         self.horizontalHeader().setVisible(True)
         self.termin_column = None  # Store column index for 'Termin'
+        self.calendar_manager = GoogleCalendarManager()  # Initialize Google Calendar Manager
+
+    def save_date_to_google_sheets(self, row, col, datetime):
+        """Update Google Sheets when a date-time is changed."""
+        try:
+            original_row = self.parent.filter_widget.filtered_data_mapping[row][1]
+        except IndexError:
+            original_row = row
+
+        formatted_datetime = datetime.toString("yyyy-MM-dd HH:mm") if datetime != QDateTime(1900, 1, 1, 0, 0) else ""
+        # Update original data
+        self.parent.original_data[original_row][col] = formatted_datetime
+
+        # Update Google Sheets
+        self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_datetime)
+
+        # Add event to Google Calendar
+        if col == self.termin_column and formatted_datetime:
+            start_datetime = datetime.toPyDateTime()
+            end_datetime = start_datetime + datetime.timedelta(hours=1)  # Example: 1-hour event
+            self.calendar_manager.add_event("Event Title", start_datetime, end_datetime, "Event Description")
 
     def update_table(self, data, headers):
         """Update table display with filtered data."""
