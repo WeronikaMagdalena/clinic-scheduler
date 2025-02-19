@@ -59,42 +59,40 @@ class TableWidget(QTableWidget):
                     self.setCellWidget(row_idx, col_idx, widget)
 
                     # Connect signal to update Google Sheets
-                    date_edit.dateChanged.connect(
-                        lambda date, r=row_idx, c=col_idx: self.save_date_to_google_sheets(r, c, date)
+                    date_edit.dateTimeChanged.connect(
+                        lambda datetime, r=row_idx, c=col_idx: self.save_date_to_google_sheets(r, c, datetime)
                     )
                 else:
                     item = QTableWidgetItem(cell)
                     item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)  # Read-only
                     self.setItem(row_idx, col_idx, item)
 
-    def save_date_to_google_sheets(self, row, col, date):
-        """Update the Google Sheet when a date is changed."""
-        # Get the original row index using the filtered data mapping
+    def save_date_to_google_sheets(self, row, col, datetime):
+        """Update Google Sheets when a date-time is changed."""
         try:
-            original_row = self.parent.filter_widget.filtered_data_mapping[row][1]  # Get the original row index
-        except IndexError as e:
+            original_row = self.parent.filter_widget.filtered_data_mapping[row][1]
+        except IndexError:
             original_row = row
 
-        formatted_date = date.toString("yyyy-MM-dd") if date != QDate(1900, 1, 1) else ""
+        formatted_datetime = datetime.toString("yyyy-MM-dd HH:mm") if datetime != QDateTime(1900, 1, 1, 0, 0) else ""
+        # Update original data
+        self.parent.original_data[original_row][col] = formatted_datetime
 
-        # Update original data in the parent
-        self.parent.original_data[original_row][col] = formatted_date  # Update original data
-
-        # Update the Google Sheet with the correct row and column
-        self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_date)  # +2 for Google Sheets indexing
+        # Update Google Sheets
+        self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_datetime)
 
     def clear_date(self, row, date_edit):
-        """Reset date to 'Not Set' and update Google Sheets."""
-        date_edit.setDate(QDate(1900, 1, 1))  # Reset to minimum date
+        """Reset date-time to 'Not Set' and update Google Sheets."""
+        date_edit.setDateTime(QDateTime(1900, 1, 1, 0, 0))  # Reset both date and time
         date_edit.setSpecialValueText("Not Set")
         date_edit.setStyleSheet("color: gray;")
-        # Update original data in the parent
+
         try:
-            original_row = self.parent.filter_widget.filtered_data_mapping[row][1] if hasattr(self.parent.filter_widget,
-                                                                                          'filtered_data_mapping') else row
-        except IndexError as e:
+            original_row = self.parent.filter_widget.filtered_data_mapping[row][1] if hasattr(
+                self.parent.filter_widget, 'filtered_data_mapping') else row
+        except IndexError:
             original_row = row
 
-        self.parent.original_data[original_row][self.termin_column] = ""  # Clear the date in original data
+        self.parent.original_data[original_row][self.termin_column] = ""  # Clear the datetime in original data
 
-        self.save_date_to_google_sheets(row, self.termin_column, QDate(1900, 1, 1))
+        self.save_date_to_google_sheets(row, self.termin_column, QDateTime(1900, 1, 1, 0, 0))
