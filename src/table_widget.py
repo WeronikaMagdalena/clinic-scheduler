@@ -22,6 +22,9 @@ class TableWidget(QTableWidget):
         self.plandauer_column = headers.index("Plandauer") if "Plandauer" in headers else None
         self.setRowCount(len(data))
 
+        if self.termin_column is not None:
+            self.setColumnWidth(self.termin_column, 200)
+
         for row_idx, row in enumerate(data):
             self.setVerticalHeaderItem(row_idx, QTableWidgetItem(str(row_idx + 1)))  # Index starts at 1
             for col_idx, cell in enumerate(row):
