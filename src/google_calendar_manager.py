@@ -28,7 +28,7 @@ class GoogleCalendarManager:
                 token.write(self.creds.to_json())
         self.service = build('calendar', 'v3', credentials=self.creds)
 
-    def add_event(self, summary, start_datetime, end_datetime, description=None):
+    def add_event(self, summary, start_datetime, end_datetime, description=None, location=None):
         event = {
             'summary': summary,
             'start': {
@@ -40,6 +40,7 @@ class GoogleCalendarManager:
                 'timeZone': 'UTC',
             },
             'description': description,
+            'location': location,
         }
         event = self.service.events().insert(calendarId='primary', body=event).execute()
         return event.get('htmlLink')
