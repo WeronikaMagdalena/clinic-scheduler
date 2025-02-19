@@ -24,6 +24,7 @@ class GoogleCalendarManager:
                 self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials_path, self.SCOPES)
+                self.creds = flow.run_local_server(port=0)
             with open(self.token_path, 'w') as token:
                 token.write(self.creds.to_json())
         self.service = build('calendar', 'v3', credentials=self.creds)
