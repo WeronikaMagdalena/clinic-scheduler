@@ -1,6 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+
 class GoogleSheetsManager:
     def __init__(self, credentials_file, sheet_name):
         self.credentials_file = credentials_file

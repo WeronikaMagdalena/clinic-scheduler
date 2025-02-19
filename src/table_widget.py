@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt, QDate, QDateTime
 
 from calendar_widget import CustomDateEdit
-from google_calendar_manager import GoogleCalendarManager
+from event_uploader import EventUploader
 
 
 class TableWidget(QTableWidget):
@@ -11,33 +11,15 @@ class TableWidget(QTableWidget):
         self.parent = parent
         self.horizontalHeader().setVisible(True)
         self.termin_column = None  # Store column index for 'Termin'
-        self.calendar_manager = GoogleCalendarManager()  # Initialize Google Calendar Manager
-
-    def save_date_to_google_sheets(self, row, col, datetime):
-        """Update Google Sheets when a date-time is changed."""
-        try:
-            original_row = self.parent.filter_widget.filtered_data_mapping[row][1]
-        except IndexError:
-            original_row = row
-
-        formatted_datetime = datetime.toString("yyyy-MM-dd HH:mm") if datetime != QDateTime(1900, 1, 1, 0, 0) else ""
-        # Update original data
-        self.parent.original_data[original_row][col] = formatted_datetime
-
-        # Update Google Sheets
-        self.parent.sheets_manager.update_cell(original_row + 2, col + 1, formatted_datetime)
-
-        # Add event to Google Calendar
-        if col == self.termin_column and formatted_datetime:
-            start_datetime = datetime.toPyDateTime()
-            end_datetime = start_datetime + datetime.timedelta(hours=1)  # Example: 1-hour event
-            self.calendar_manager.add_event("Event Title", start_datetime, end_datetime, "Event Description")
+        self.plandauer_column = None  # Store column index for 'Plandauer'
+        self.event_uploader = EventUploader(self)
 
     def update_table(self, data, headers):
         """Update table display with filtered data."""
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
         self.termin_column = headers.index("Termin") if "Termin" in headers else None
+        self.plandauer_column = headers.index("Plandauer") if "Plandauer" in headers else None
         self.setRowCount(len(data))
 
         for row_idx, row in enumerate(data):
@@ -58,12 +40,6 @@ class TableWidget(QTableWidget):
                     )
                     clear_button.setFocusPolicy(Qt.StrongFocus)  # Allow the button to gain focus
 
-                    # Add a visual effect when the button is focused
-                    clear_button.setStyleSheet(
-                        "border: none; color: red; font-weight: bold; font-size: 14px;"
-                        "border-radius: 11px; padding: 3px; background-color: transparent;"
-                    )
-
                     clear_button.setStyleSheet("""
                         QPushButton:focus {
                             background-color: lightcoral; /* Change color when focused */
@@ -76,6 +52,13 @@ class TableWidget(QTableWidget):
                     )
 
                     layout.addWidget(clear_button)
+
+                    upload_button = QPushButton("Upload")
+                    upload_button.setFixedSize(60, 22)
+                    upload_button.clicked.connect(
+                        lambda _, r=row_idx: self.upload_event(r)
+                    )
+                    layout.addWidget(upload_button)
 
                     widget.setLayout(layout)
                     self.setCellWidget(row_idx, col_idx, widget)
@@ -118,3 +101,15 @@ class TableWidget(QTableWidget):
         self.parent.original_data[original_row][self.termin_column] = ""  # Clear the datetime in original data
 
         self.save_date_to_google_sheets(row, self.termin_column, QDateTime(1900, 1, 1, 0, 0))
+
+    def upload_event(self, row_idx):
+        """Upload event to Google Calendar."""
+        row_data = []
+        for col in range(self.columnCount()):
+            if col == self.termin_column:
+                date_edit = self.cellWidget(row_idx, col).layout().itemAt(0).widget()
+                row_data.append(date_edit.dateTime().toString("yyyy-MM-dd HH:mm"))
+            else:
+                item = self.item(row_idx, col)
+                row_data.append(item.text() if item else "")
+        self.event_uploader.upload_event(row_data)

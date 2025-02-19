@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDateEdit, QPushButton
 
 from filtered_data_window import FilteredDataWindow
 
+
 class TerminFilterWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
