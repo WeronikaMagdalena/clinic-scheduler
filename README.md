@@ -1,9 +1,7 @@
-# Data Route
-TODO
+# Google Data Manager
 
 ## How to run
 ```bash
-git clone https://github.com/WeronikaMagdalena/data-route.git
-cd data-route
+git clone https://github.com/WeronikaMagdalena/google-data-manager.git
+cd google-data-manager
 pip install -r requirements.txt
-TODO
