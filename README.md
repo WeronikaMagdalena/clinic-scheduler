@@ -1,6 +1,6 @@
 # Google Data Manager
 
-## How to run
+## Set Up
 ```bash
 git clone https://github.com/WeronikaMagdalena/google-data-manager.git
 cd google-data-manager
